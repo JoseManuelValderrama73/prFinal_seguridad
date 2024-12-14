@@ -9,7 +9,7 @@ class SQL:
         self.lon = -1
         self.conexion = sql.connect(config.NOMBRE_DB)
         try:
-            self.crear()
+            self.__crear()
         except sql.OperationalError:
             cursor = self.conexion.cursor()
             cursor.execute("SELECT * FROM t")
@@ -32,7 +32,7 @@ class SQL:
         self.conexion.close()
         self.logged_in = False
 
-    def crear(self):
+    def __crear(self):
         cursor = self.conexion.cursor()
         cursor.execute(
             """CREATE TABLE t (
