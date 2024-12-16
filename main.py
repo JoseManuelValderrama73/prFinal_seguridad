@@ -1,15 +1,12 @@
-from sql import SQL
+from usuario import Usuario
 
-sql = SQL()
-sql.logIn("qwerty")
-# sql.crear("qwerty")
-# sql.insertar("uja", "jmvs0008@red.ujaen.es", "12340")
-# sql.insertar("icloud", "josemvalde@icloud.com", "qwert")
-# sql.eliminar("icloud")
-dato = sql.getFila("icloud")
-if dato:
-    print(dato[2])
-else:
-    print("no")
+u = Usuario()
+u.iniciaSesion("valde", "qwerty")
+# u.creaSesion("valde", "qwerty")
+# u.guardar("uja", "jmvs0008", "1234")
+# u.guardar("personal", "josemvalde", "asdf")
 
-print(sql.getLon())
+# u.eliminar("uja")
+u.editar("personal", contrasena="zxc")
+print(u.getContrasena("personal"))
+u.cierraSesion()
