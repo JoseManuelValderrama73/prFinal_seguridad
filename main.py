@@ -2,41 +2,72 @@ from usuario import Usuario
 import getpass
 
 
+# imprime el texto en rojo
+def error(s):
+    print(f"\033[31m{s}\033[0m")
 
-while(True):
+
+# imprime el texto en verde
+def ok(s):
+    print(f"\033[32m{s}\033[0m")
+
+
+def comprobarContrasena(pwd):
+    valida = False
+    for i in range(0, len(pwd)):
+        if pwd[i].isupper():
+            valida = True
+            break
+        elif pwd[i].isdigit():
+            if i != 0:
+                valida = True
+            break
+
+    return valida and len(pwd) >= 5
+
+
+while True:
+    ok("prueba")
     print("::::::::::::::::::::::::::::::::::::::::::::")
     print(":::::::::: GESTOR DE COONTRASEÑAS ::::::::::")
     print("::::::::::::::::::::::::::::::::::::::::::::")
     print("1. Registrarse")
     print("2. Iniciar sesión")
     print("0. SALIR")
-    opcion = input("Introduce opción deseada: ")
+    opcion = int(input("Introduce opción deseada: "))
     print("")
-    
-    if(int(opcion) == 1):
+
+    if opcion == 1:
         u = Usuario()
-        control = True
 
-        while(control):
-            usu = input("Introduce el usuario: ")
+        usu = input("Introduce el usuario: ")
+        while True:
             passw = input("Introduce una contraseña: ")
+            spassw = input("Introducela de nuevo: ")
+            if passw != spassw:
+                error("Las contraseñas no coinciden\n")
+            else:
+                if not comprobarContrasena(passw):
+                    error("Contraseña invalida")
+                    print("· Minimo 5 caracteres")
+                    print("· Al menos una mayuscula")
+                    print("· Al menos un numero (no al inicio)\n")
+                else:
+                    break
 
-            try: 
-                u.creaSesion(usu, passw)
-                control = False
+        try:
+            u.creaSesion(usu, passw)
+        except NameError as e:
+            error(e)
 
-            except NameError as e:
-                print(e)
-                control = True
-        
-        print("Se ha creado el usuario correctamente ")
+        ok("Se ha creado el usuario correctamente ")
         del u
 
-    elif(int(opcion) == 2):
+    elif int(opcion) == 2:
         u = Usuario()
         control = True
 
-        while(control):
+        while control:
             usu = input("Introdue el ususario: ")
             passw = getpass.getpass("Introduce la contraseña(oculta, no se muestra): ")
 
@@ -48,7 +79,7 @@ while(True):
                 print("Contraseña o usuario incorrectos ")
                 control = True
 
-        while(True):        
+        while True:
             print("")
             print("::::::::::::::::::::::::::::::::::::::::::::")
             print(":::::::::: GESTOR DE COONTRASEÑAS ::::::::::")
@@ -63,34 +94,33 @@ while(True):
             opcion = input("Elija opcion: ")
             print("")
 
-            if(int(opcion) == 1):
+            if int(opcion) == 1:
                 clave = input("Introduce la clave a consultar: ")
-            
+
                 try:
                     print(f"EL usuario es: {u.getUsuario(clave)}")
                 except NameError as e:
                     print(e)
 
-            elif(int(opcion) == 4):
-                clave = input("Introduce la clave(identificador de la contraseña que va a guardar): ")
+            elif int(opcion) == 4:
+                clave = input(
+                    "Introduce la clave(identificador de la contraseña que va a guardar): "
+                )
                 usu = input("Introduce el usuario de la contraseña que va a guardar: ")
                 passw = input("Introduce la contraseña a guardar: ")
 
                 u.guardar(clave, usu, passw)
                 print("Guardada con exito!")
 
-            elif(int(opcion) == 0):
+            elif int(opcion) == 0:
                 u.cierraSesion()
                 print("Sesión cerrada")
                 print("")
                 break
 
-        
-    elif(int(opcion) == 0):
+    elif int(opcion) == 0:
         print("Hasta la proxima!")
         break
-
-
 
 
 """
