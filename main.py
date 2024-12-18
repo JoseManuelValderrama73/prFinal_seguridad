@@ -1,5 +1,14 @@
 from usuario import Usuario
 import getpass
+import os
+
+directory = 
+
+if not os.path.exists(directory):
+    os.makedirs(directory)
+    print(f"Directorio {directory} creado")
+else: 
+    print(f"Directorio {directory} ya existe")
 
 
 # imprime el texto en rojo
@@ -76,7 +85,7 @@ while True:
                 control = False
 
             except NameError:
-                print("Contraseña o usuario incorrectos ")
+                error("Contraseña o usuario incorrectos ")
                 control = True
 
         while True:
@@ -94,33 +103,68 @@ while True:
             opcion = input("Elija opcion: ")
             print("")
 
-            if int(opcion) == 1:
+            
+            if(int(opcion) == 1):
                 clave = input("Introduce la clave a consultar: ")
-
+            
                 try:
                     print(f"EL usuario es: {u.getUsuario(clave)}")
                 except NameError as e:
                     print(e)
 
-            elif int(opcion) == 4:
-                clave = input(
-                    "Introduce la clave(identificador de la contraseña que va a guardar): "
-                )
+            elif(int(opcion) == 2):
+                clave = input("Introduce la clave de la contraseña a consultar: ")
+                if(u.contrasenaPasada(clave)):
+                    print(f"La contraseña {u.getContrasena(clave)} debe ser cambiada ")
+                else:
+                    print(f"La contraseña es: {u.getContrasena(clave)}")
+
+            elif(int(opcion) == 3):
+                clave = input("Introduce la clave de la contraseña a consultar: ")
+                print(f"La contraseña {u.getContrasena(clave)} es valida hasta {u.getFecha(clave)}")
+                
+            elif(int(opcion) == 4):
+                clave = input("Introduce la clave(identificador de la contraseña que va a guardar): ")
                 usu = input("Introduce el usuario de la contraseña que va a guardar: ")
                 passw = input("Introduce la contraseña a guardar: ")
 
                 u.guardar(clave, usu, passw)
-                print("Guardada con exito!")
+                ok("Guardada con exito!")
 
-            elif int(opcion) == 0:
+            elif(int(opcion) == 5):
+                clave = input("Introducir la clave de la contraseña a editar: ")
+                usu = input("Introduce el nuevo usuario (N si no quieres editarlo): ")
+                passw = input("Introduce la nueva contraseña (N si no quieres editarla): ")
+
+                if(usu == "N"):
+                    u.editar("", passw)
+                    ok("Contraseña editada con éxito")
+                elif(passw == "N"):
+                    u.editar(usu, "")
+                    ok("Usuario editado con éxito")
+                elif(passw == "N" and usu == "N"):
+                    error("Debe introducir al menos una de ellas")
+                else:
+                    u.editar(usu, passw)
+                    ok("Usuario y contraseña editadas correctamente")
+
+            elif(int(opcion) == 6):
+                clave = input("Introduce la clave de la contraseña que desea eliminar: ")
+                u.eliminar(clave)
+
+                ok("La contraseña ha sido borrada con exito")
+
+            elif(int(opcion) == 0):
                 u.cierraSesion()
-                print("Sesión cerrada")
+                ok("Sesión cerrada")
                 print("")
                 break
 
-    elif int(opcion) == 0:
+        
+    elif(int(opcion) == 0):
         print("Hasta la proxima!")
         break
+
 
 
 """
