@@ -1,14 +1,7 @@
 from usuario import Usuario
-import getpass
-import os
+import config
 
-directory = 
-
-if not os.path.exists(directory):
-    os.makedirs(directory)
-    print(f"Directorio {directory} creado")
-else: 
-    print(f"Directorio {directory} ya existe")
+import getpass, os, sys, datetime
 
 
 # imprime el texto en rojo
@@ -19,6 +12,11 @@ def error(s):
 # imprime el texto en verde
 def ok(s):
     print(f"\033[32m{s}\033[0m")
+
+
+# imprime el texto en verde
+def advertencia(s):
+    print(f"\033[33m{s}\033[0m")
 
 
 def comprobarContrasena(pwd):
@@ -32,11 +30,28 @@ def comprobarContrasena(pwd):
                 valida = True
             break
 
+    for letra in pwd:
+        if letra == "ñ":
+            valida = False
+            break
+
     return valida and len(pwd) >= 5
 
 
+def comprobarNombreUsuario(pwd):
+    valida = True
+    for letra in pwd:
+        if letra == "ñ":
+            valida = False
+            break
+
+    return valida and not pwd[0].isdigit()
+
+
+if not os.path.exists(config.DB_DIR):
+    os.makedirs(config.DB_DIR)
+
 while True:
-    ok("prueba")
     print("::::::::::::::::::::::::::::::::::::::::::::")
     print(":::::::::: GESTOR DE COONTRASEÑAS ::::::::::")
     print("::::::::::::::::::::::::::::::::::::::::::::")
@@ -44,25 +59,34 @@ while True:
     print("2. Iniciar sesión")
     print("0. SALIR")
     opcion = int(input("Introduce opción deseada: "))
-    print("")
+    print("\n")
+    u = Usuario()
 
-    if opcion == 1:
-        u = Usuario()
+    if opcion == 0:
+        print("Hasta la proxima!")
+        break
 
-        usu = input("Introduce el usuario: ")
+    elif opcion == 1:
+        while True:
+            usu = input("Introduce el usuario: ")
+            if not comprobarNombreUsuario(usu):
+                error("Nombre de usuario invalido")
+                print("· No debe contener 'ñ'")
+                print("· No debe haber un numero al inicio\n")
+            else:
+                break
         while True:
             passw = input("Introduce una contraseña: ")
+            if not comprobarContrasena(passw):
+                error("Contraseña invalida")
+                print("· Minimo 5 caracteres")
+                print("· Al menos una mayuscula")
+                print("· Al menos un numero (no al inicio)\n")
             spassw = input("Introducela de nuevo: ")
             if passw != spassw:
                 error("Las contraseñas no coinciden\n")
             else:
-                if not comprobarContrasena(passw):
-                    error("Contraseña invalida")
-                    print("· Minimo 5 caracteres")
-                    print("· Al menos una mayuscula")
-                    print("· Al menos un numero (no al inicio)\n")
-                else:
-                    break
+                break
 
         try:
             u.creaSesion(usu, passw)
@@ -70,101 +94,109 @@ while True:
             error(e)
 
         ok("Se ha creado el usuario correctamente ")
-        del u
 
-    elif int(opcion) == 2:
-        u = Usuario()
-        control = True
-
-        while control:
-            usu = input("Introdue el ususario: ")
-            passw = getpass.getpass("Introduce la contraseña(oculta, no se muestra): ")
-
-            try:
-                u.iniciaSesion(usu, passw)
-                control = False
-
-            except NameError:
-                error("Contraseña o usuario incorrectos ")
-                control = True
-
+    elif opcion == 2:
         while True:
-            print("")
-            print("::::::::::::::::::::::::::::::::::::::::::::")
+            usu = input("Introdue el ususario: ")
+            if not os.path.exists(f"{config.DB_DIR}/{usu}.db"):
+                error("No existe un usuario con ese nombre")
+            else:
+                break
+        intentos = 3
+        while True:
+            passw = getpass.getpass("Introduce la contraseña (oculta, no se muestra): ")
+
+            if u.iniciaSesion(usu, passw):
+                break
+            else:
+                intentos -= 1
+                if intentos == 0:
+                    error("Contraseña incorrecta. No quedan mas intentos")
+                    sys.exit()
+                else:
+                    error(f"Contraseña incorrecta. Quedan {intentos} intentos")
+
+    if u.logged_in:
+        while True:
+            print("\n::::::::::::::::::::::::::::::::::::::::::::")
             print(":::::::::: GESTOR DE COONTRASEÑAS ::::::::::")
             print("::::::::::::::::::::::::::::::::::::::::::::")
-            print("1. Consultar usuario de una contraseña")
-            print("2. Consultar una contraseña")
+            print("1. Consultar una contraseña")
+            print("2. Ver lista de las claves")
             print("3. Consultar fecha límite de una contraseña")
             print("4. Guardar contraseña nueva")
             print("5. Editar una contraseña")
             print("6. Eliminar una contraseña")
             print("0. CERRAR SESIÓN")
-            opcion = input("Elija opcion: ")
-            print("")
+            opcion = int(input("Elija opcion: "))
+            print("\n")
 
-            
-            if(int(opcion) == 1):
+            if opcion == 1:
                 clave = input("Introduce la clave a consultar: ")
-            
+
                 try:
-                    print(f"EL usuario es: {u.getUsuario(clave)}")
+                    print(
+                        f"{clave}: Usuario: {u.getUsuario(clave)}, Contraseña: {u.getContrasena(clave)}, Creación: {u.getFecha(clave)}"
+                    )
+                    if u.contrasenaPasada(clave):
+                        advertencia(
+                            f"Han pasado más de {config.DIAS_AVISO} dias desde que se creó la clave,\ndebería ser cambiada"
+                        )
                 except NameError as e:
-                    print(e)
+                    error(e)
 
-            elif(int(opcion) == 2):
-                clave = input("Introduce la clave de la contraseña a consultar: ")
-                if(u.contrasenaPasada(clave)):
-                    print(f"La contraseña {u.getContrasena(clave)} debe ser cambiada ")
-                else:
-                    print(f"La contraseña es: {u.getContrasena(clave)}")
+            elif opcion == 2:
+                lista = u.getListaClaves()
+                print("Las claves guardadas son:")
+                for clave in lista:
+                    print(" - ", clave)
 
-            elif(int(opcion) == 3):
+            elif opcion == 3:
                 clave = input("Introduce la clave de la contraseña a consultar: ")
-                print(f"La contraseña {u.getContrasena(clave)} es valida hasta {u.getFecha(clave)}")
-                
-            elif(int(opcion) == 4):
-                clave = input("Introduce la clave(identificador de la contraseña que va a guardar): ")
+                f = datetime.datetime.strptime(
+                    u.getFecha(clave), "%d-%m-%Y"
+                ) + datetime.timedelta(days=config.DIAS_AVISO)
+                print(
+                    f"La contraseña {u.getContrasena(clave)} es valida hasta {f.strftime("%d-%m-%Y")}"
+                )
+
+            elif opcion == 4:
+                clave = input(
+                    "Introduce la clave(identificador de la contraseña que va a guardar): "
+                )
                 usu = input("Introduce el usuario de la contraseña que va a guardar: ")
                 passw = input("Introduce la contraseña a guardar: ")
 
                 u.guardar(clave, usu, passw)
                 ok("Guardada con exito!")
 
-            elif(int(opcion) == 5):
+            elif opcion == 5:
                 clave = input("Introducir la clave de la contraseña a editar: ")
-                usu = input("Introduce el nuevo usuario (N si no quieres editarlo): ")
-                passw = input("Introduce la nueva contraseña (N si no quieres editarla): ")
+                usu = input(
+                    "Introduce el nuevo usuario (vacio si no quieres editarlo): "
+                )
+                passw = input(
+                    "Introduce la nueva contraseña (vacio si no quieres editarla): "
+                )
 
-                if(usu == "N"):
-                    u.editar("", passw)
-                    ok("Contraseña editada con éxito")
-                elif(passw == "N"):
-                    u.editar(usu, "")
-                    ok("Usuario editado con éxito")
-                elif(passw == "N" and usu == "N"):
-                    error("Debe introducir al menos una de ellas")
+                if passw == "" and usu == "":
+                    advertencia("No se ha editado nada")
                 else:
-                    u.editar(usu, passw)
-                    ok("Usuario y contraseña editadas correctamente")
+                    u.editar(clave, usu, passw)
+                    ok("Se ha editado con éxito")
 
-            elif(int(opcion) == 6):
-                clave = input("Introduce la clave de la contraseña que desea eliminar: ")
+            elif opcion == 6:
+                clave = input(
+                    "Introduce la clave de la contraseña que desea eliminar: "
+                )
                 u.eliminar(clave)
 
                 ok("La contraseña ha sido borrada con exito")
 
-            elif(int(opcion) == 0):
+            elif opcion == 0:
                 u.cierraSesion()
-                ok("Sesión cerrada")
-                print("")
+                ok("Sesión cerrada\n")
                 break
-
-        
-    elif(int(opcion) == 0):
-        print("Hasta la proxima!")
-        break
-
 
 
 """

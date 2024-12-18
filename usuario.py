@@ -47,6 +47,9 @@ class Usuario:
         else:
             raise SystemError("Se ha cerrado la sesion")
 
+    def getListaClaves(self):
+        return self.db.getListaClaves()
+
     def contrasenaPasada(self, clave):
         hoy = self.__getFechaHoy()
 

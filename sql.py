@@ -81,6 +81,15 @@ class SQL:
         else:
             raise NameError("Esa clave no existe")
 
+    def getListaClaves(self):
+        lista = []
+        cursor = self.conexion.cursor()
+        cursor.execute("SELECT * FROM t")
+        datos = cursor.fetchall()
+        for dato in datos:
+            lista.append(dato[0])
+        return lista
+
     def dbClose(self):
         self.conexion.close()
 
