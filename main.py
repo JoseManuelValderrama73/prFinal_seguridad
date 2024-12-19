@@ -39,13 +39,13 @@ def comprobarContrasena(pwd):
     return valida and len(pwd) >= 5
 
 
-def recuperarContrasenaMaestra():
+def recuperarContrasenaMaestra(usuario):
     confi = input("¿Desea recuperar su contraseña? (s/n): ")
     if confi == "s":
         email = input("Introduzca su correo electronico: ")
         codigo = correo_recuperacion.recuperar_clave(email)
         if codigo == input("Introduce el codigo de seguridad recibido por correo: "):
-            print("Su contraseña es ", u.getContrasena("maestra"))
+            print("Su contraseña es ", u.getContrasena("maestra", usuario))
         else:
             error("Codigo incorrecto")
             sys.exit()
@@ -112,7 +112,7 @@ while True:
 
     elif opcion == 2:
         while True:
-            usu = input("Introdue el ususario: ")
+            usu = input("Introduce el ususario: ")
             if not os.path.exists(f"{config.DB_DIR}/{usu}.db"):
                 error("No existe un usuario con ese nombre")
             else:
@@ -123,7 +123,7 @@ while True:
                 "Introduce la contraseña (oculta, no se muestra) (intruduzca 'h' si la ha olvidado): "
             )
             if passw == "h":
-                recuperarContrasenaMaestra()
+                recuperarContrasenaMaestra(usu)
             else:
                 if u.iniciaSesion(usu, passw):
                     break
