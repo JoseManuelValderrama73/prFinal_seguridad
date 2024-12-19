@@ -16,18 +16,22 @@ class Usuario:
             self.db = sql.SQL(nombre)
             self.db.insertar("maestra", nombre, maestra)
             self.logged_in = True
+            self.maestra = maestra
         else:
             raise NameError("Ya existe ese usuario")
 
     def iniciaSesion(self, nombre, maestra):
         self.db = sql.SQL(nombre)
         self.logged_in = maestra == self.db.getContrasena()
+        if self.logged_in:
+            self.maestra = maestra
         return self.logged_in
 
     def cierraSesion(self):
         if self.logged_in:
             self.db.dbClose()
             self.logged_in = False
+            del self.maestra
         else:
             raise SystemError("No hay sesion iniciada")
 
@@ -41,20 +45,18 @@ class Usuario:
         else:
             raise SystemError("Se ha cerrado la sesion")
 
-    def getContrasena(self, clave, usuario=""):
-        if(usuario != ""):
-           self.db = sql.SQL(usuario)
-
-        return self.db.getContrasena(clave)
-        """
+    def getContrasena(self, clave):
         if self.logged_in:
             return self.db.getContrasena(clave)
+        elif clave == "maestra":
+            return self.db.getContrasena()
         else:
             raise SystemError("Se ha cerrado la sesion")
-        """
 
     def getListaClaves(self):
-        return self.db.getListaClaves()
+        lista = self.db.getListaClaves()
+        lista.pop(0)
+        return lista
 
     def contrasenaPasada(self, clave):
         hoy = self.__getFechaHoy()

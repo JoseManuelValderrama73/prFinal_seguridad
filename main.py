@@ -2,7 +2,7 @@ import correo_recuperacion
 from usuario import Usuario
 import config
 
-import getpass, os, sys, datetime
+import getpass, os, sys, datetime, random, string
 
 
 # imprime el texto en rojo
@@ -39,18 +39,14 @@ def comprobarContrasena(pwd):
     return valida and len(pwd) >= 5
 
 
-def recuperarContrasenaMaestra(usuario):
-    confi = input("¿Desea recuperar su contraseña? (s/n): ")
-    if confi == "s":
-        email = input("Introduzca su correo electronico: ")
-        codigo = correo_recuperacion.recuperar_clave(email)
-        if codigo == input("Introduce el codigo de seguridad recibido por correo: "):
-            print("Su contraseña es ", u.getContrasena("maestra", usuario))
-        else:
-            error("Codigo incorrecto")
-            sys.exit()
+def recuperarContrasenaMaestra():
+    email = input("Introduzca su correo electronico: ")
+    codigo = correo_recuperacion.recuperar_clave(email)
+    if codigo == input("Introduce el codigo de seguridad recibido por correo: "):
+        print("Su contraseña es", u.getContrasena("maestra"))
     else:
-        print("Sin problema")
+        error("Codigo incorrecto")
+        sys.exit()
 
 
 def comprobarNombreUsuario(pwd):
@@ -61,6 +57,34 @@ def comprobarNombreUsuario(pwd):
             break
 
     return valida and not pwd[0].isdigit()
+
+
+def generar():
+    if config.C_LON < 4:  # Ensure minimum length for complexity
+        raise ValueError("La longitud de la contraseña no puede ser menor a 4")
+
+    # Create pools of characters
+    lower = string.ascii_lowercase
+    upper = string.ascii_uppercase
+    digits = string.digits
+    symbols = string.punctuation
+
+    # Ensure the password has at least one of each character type
+    all_characters = lower + upper + digits + symbols
+    password = [
+        random.choice(lower),
+        random.choice(upper),
+        random.choice(digits),
+        random.choice(symbols),
+    ]
+
+    # Fill the rest of the password length with random choices from all characters
+    password += random.choices(all_characters, k=config.C_LON - 4)
+
+    # Shuffle the password to make it random
+    random.shuffle(password)
+
+    return "".join(password)
 
 
 if not os.path.exists(config.DB_DIR):
@@ -112,7 +136,7 @@ while True:
 
     elif opcion == 2:
         while True:
-            usu = input("Introduce el ususario: ")
+            usu = input("Introduce el usuario: ")
             if not os.path.exists(f"{config.DB_DIR}/{usu}.db"):
                 error("No existe un usuario con ese nombre")
             else:
@@ -123,7 +147,11 @@ while True:
                 "Introduce la contraseña (oculta, no se muestra) (intruduzca 'h' si la ha olvidado): "
             )
             if passw == "h":
-                recuperarContrasenaMaestra(usu)
+                confi = input("¿Desea recuperar su contraseña? (s/n): ")
+                if confi == "s":
+                    recuperarContrasenaMaestra()
+                else:
+                    print("0K")
             else:
                 if u.iniciaSesion(usu, passw):
                     break
@@ -131,10 +159,17 @@ while True:
                     intentos -= 1
                     if intentos == 0:
                         error("Contraseña incorrecta. No quedan mas intentos")
-                        recuperarContrasenaMaestra()
-                        sys.exit()
+                        confi = input("¿Desea recuperar su contraseña? (s/n): ")
+                        if confi == "s":
+                            recuperarContrasenaMaestra()
+                            intentos = 3
+                        else:
+                            print("0K")
+                            sys.exit()
                     else:
                         error(f"Contraseña incorrecta. Quedan {intentos} intentos")
+    else:
+        error("Esa opción no es valida")
 
     if u.logged_in:
         while True:
@@ -156,7 +191,7 @@ while True:
 
                 try:
                     print(
-                        f"{clave}: Usuario: {u.getUsuario(clave)}, Contraseña: {u.getContrasena(clave)}, Creación: {u.getFecha(clave)}"
+                        f"{clave}: Usuario: {u.getUsuario(clave)}, Contraseña: {u.getContrasena(clave)}, Creación / Última modificación: {u.getFecha(clave)}"
                     )
                     if u.contrasenaPasada(clave):
                         advertencia(
@@ -182,10 +217,33 @@ while True:
 
             elif opcion == 4:
                 clave = input(
-                    "Introduce la clave(identificador de la contraseña que va a guardar): "
+                    "Introduce la clave (identificador de la contraseña que va a guardar): "
                 )
                 usu = input("Introduce el usuario de la contraseña que va a guardar: ")
-                passw = input("Introduce la contraseña a guardar: ")
+                while True:
+                    passw = input(
+                        "Introduce la contraseña a guardar ('g' para genererar una contraseña aleatoria): "
+                    )
+                    if passw == "g":
+                        while True:
+                            try:
+                                passw = generar()
+                                if (
+                                    input(
+                                        f"¿Quieres guardar la contraseña {passw}? (s, n): "
+                                    )
+                                    == "s"
+                                ):
+                                    break
+                            except ValueError as e:
+                                error(e)
+                                print("Cambie la longitud en 'config.py'")
+                                break
+
+                    if passw == "":
+                        error("La contraseña no puede estar vacía")
+                    else:
+                        break
 
                 u.guardar(clave, usu, passw)
                 ok("Guardada con exito!")
@@ -217,6 +275,8 @@ while True:
                 u.cierraSesion()
                 ok("Sesión cerrada\n")
                 break
+            else:
+                error("Esa opción no es valida")
 
 
 """
