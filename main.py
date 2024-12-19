@@ -1,3 +1,4 @@
+import correo_recuperacion
 from usuario import Usuario
 import config
 
@@ -36,6 +37,20 @@ def comprobarContrasena(pwd):
             break
 
     return valida and len(pwd) >= 5
+
+
+def recuperarContrasenaMaestra():
+    confi = input("¿Desea recuperar su contraseña? (s/n): ")
+    if confi == "s":
+        email = input("Introduzca su correo electronico: ")
+        codigo = correo_recuperacion.recuperar_clave(email)
+        if codigo == input("Introduce el codigo de seguridad recibido por correo: "):
+            print("Su contraseña es ", u.getContrasena("maestra"))
+        else:
+            error("Codigo incorrecto")
+            sys.exit()
+    else:
+        print("Sin problema")
 
 
 def comprobarNombreUsuario(pwd):
@@ -104,17 +119,22 @@ while True:
                 break
         intentos = 3
         while True:
-            passw = getpass.getpass("Introduce la contraseña (oculta, no se muestra): ")
-
-            if u.iniciaSesion(usu, passw):
-                break
+            passw = getpass.getpass(
+                "Introduce la contraseña (oculta, no se muestra) (intruduzca 'h' si la ha olvidado): "
+            )
+            if passw == "h":
+                recuperarContrasenaMaestra()
             else:
-                intentos -= 1
-                if intentos == 0:
-                    error("Contraseña incorrecta. No quedan mas intentos")
-                    sys.exit()
+                if u.iniciaSesion(usu, passw):
+                    break
                 else:
-                    error(f"Contraseña incorrecta. Quedan {intentos} intentos")
+                    intentos -= 1
+                    if intentos == 0:
+                        error("Contraseña incorrecta. No quedan mas intentos")
+                        recuperarContrasenaMaestra()
+                        sys.exit()
+                    else:
+                        error(f"Contraseña incorrecta. Quedan {intentos} intentos")
 
     if u.logged_in:
         while True:
