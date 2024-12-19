@@ -7,8 +7,8 @@ import string
 def enviar_correo(destinatario, asunto, mensaje):
     servidor = "smtp.gmail.com"
     puerto = 587
-    remitente = "jmvs0008@red.ujaen.es"
-    contrasena = "contraseña_de_aplicaciones"
+    remitente = "gestorcontrasena2024@gmail.com"
+    contrasena = "zbjr apqq lsew ravm"
 
     msg = MIMEText(mensaje)
     msg["Subject"] = asunto
