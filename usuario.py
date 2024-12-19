@@ -41,11 +41,17 @@ class Usuario:
         else:
             raise SystemError("Se ha cerrado la sesion")
 
-    def getContrasena(self, clave):
+    def getContrasena(self, clave, usuario=""):
+        if(usuario != ""):
+           self.db = sql.SQL(usuario)
+
+        return self.db.getContrasena(clave)
+        """
         if self.logged_in:
             return self.db.getContrasena(clave)
         else:
             raise SystemError("Se ha cerrado la sesion")
+        """
 
     def getListaClaves(self):
         return self.db.getListaClaves()
