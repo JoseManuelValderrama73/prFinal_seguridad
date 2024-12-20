@@ -4,6 +4,7 @@ import random
 import string
 
 
+#Función encargada de enviar el correo
 def enviar_correo(destinatario, asunto, mensaje):
     servidor = "smtp.gmail.com"
     puerto = 587
@@ -24,10 +25,12 @@ def enviar_correo(destinatario, asunto, mensaje):
         print(f"Error al enviar correo: {e}")
 
 
+#Función que genera el código de recuperación enciado en el correo
 def generar_codigo_recuperacion():
     return "".join(random.choices(string.ascii_letters + string.digits, k=8))
 
 
+#Función que llama a generar_codigo_recuperacion y enviar_correo
 def recuperar_clave(destinatario):
     codigo = generar_codigo_recuperacion()
 
