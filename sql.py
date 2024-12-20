@@ -38,20 +38,20 @@ class SQL:
         self.conexion.commit()
 
     # metodos de encriptar
-    # 1. AES (Advanced Encryption Standard) with a Key and Salt
+    # 1. AES (Advanced Encryption Standard) para encriptar 
     def __encriptar(self, pwd):
-        # Generate a salt
+       
         salt = get_random_bytes(16)
-        # Derive a key using PBKDF2
+        
         key = PBKDF2(self.key, salt, dkLen=32, count=100000)
-        # Create an AES cipher
+        
         cipher = AES.new(key, AES.MODE_GCM)
-        # Encrypt the password
+        
         ciphertext, tag = cipher.encrypt_and_digest(pwd.encode())
-        # Return salt, nonce, tag, and ciphertext (needed for decryption)
+        
         return base64.b64encode(salt + cipher.nonce + tag + ciphertext).decode()
 
-    # 1. AES (Advanced Encryption Standard) with a Key and Salt
+    # 1. AES (Advanced Encryption Standard) para desencriptar
     def __desencriptar(self, pwd):
         data = base64.b64decode(pwd)
         salt, nonce, tag, ciphertext = data[:16], data[16:32], data[32:48], data[48:]
