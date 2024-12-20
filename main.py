@@ -15,7 +15,7 @@ def ok(s):
     print(f"\033[32m{s}\033[0m")
 
 
-# imprime el texto en verde
+# imprime el texto en amarillo
 def advertencia(s):
     print(f"\033[33m{s}\033[0m")
 
@@ -38,7 +38,7 @@ def comprobarContrasena(pwd):
 
     return valida and len(pwd) >= 5
 
-
+#Función para recuperar la contraseña por correo
 def recuperarContrasenaMaestra():
     email = input("Introduzca su correo electronico: ")
     codigo = correo_recuperacion.recuperar_clave(email)
@@ -58,18 +58,16 @@ def comprobarNombreUsuario(pwd):
 
     return valida and not pwd[0].isdigit()
 
-
+#Función que genera una contraseña
 def generar():
-    if config.C_LON < 4:  # Ensure minimum length for complexity
+    if config.C_LON < 4:  
         raise ValueError("La longitud de la contraseña no puede ser menor a 4")
 
-    # Create pools of characters
     lower = string.ascii_lowercase
     upper = string.ascii_uppercase
     digits = string.digits
     symbols = string.punctuation
 
-    # Ensure the password has at least one of each character type
     all_characters = lower + upper + digits + symbols
     password = [
         random.choice(lower),
@@ -78,18 +76,17 @@ def generar():
         random.choice(symbols),
     ]
 
-    # Fill the rest of the password length with random choices from all characters
-    password += random.choices(all_characters, k=config.C_LON - 4)
+   password += random.choices(all_characters, k=config.C_LON - 4)
 
-    # Shuffle the password to make it random
     random.shuffle(password)
 
     return "".join(password)
 
-
+#Comprobamos si la carpeta para almacenar las bases de datos está creada y si no se crea
 if not os.path.exists(config.DB_DIR):
-    os.makedirs(config.DB_DIR)
+     os.makedirs(config.DB_DIR)
 
+#Menú principal 
 while True:
     print("::::::::::::::::::::::::::::::::::::::::::::")
     print(":::::::::: GESTOR DE COONTRASEÑAS ::::::::::")
@@ -105,6 +102,7 @@ while True:
         print("Hasta la proxima!")
         break
 
+    # Gestionamos el resgistro de usuarios nuevos
     elif opcion == 1:
         while True:
             usu = input("Introduce el usuario: ")
@@ -114,6 +112,7 @@ while True:
                 print("· No debe haber un numero al inicio\n")
             else:
                 break
+                
         while True:
             passw = input("Introduce una contraseña: ")
             if not comprobarContrasena(passw):
@@ -134,6 +133,7 @@ while True:
 
         ok("Se ha creado el usuario correctamente ")
 
+    #Manejamos el inicio de sesión 
     elif opcion == 2:
         while True:
             usu = input("Introduce el usuario: ")
@@ -142,6 +142,7 @@ while True:
             else:
                 break
         intentos = 3
+        
         while True:
             passw = getpass.getpass(
                 "Introduce la contraseña (oculta, no se muestra) (intruduzca 'h' si la ha olvidado): "
@@ -172,6 +173,7 @@ while True:
         error("Esa opción no es valida")
 
     if u.logged_in:
+        #Menú una vez iniciada la sesión
         while True:
             print("\n::::::::::::::::::::::::::::::::::::::::::::")
             print(":::::::::: GESTOR DE COONTRASEÑAS ::::::::::")
@@ -186,6 +188,7 @@ while True:
             opcion = int(input("Elija opcion: "))
             print("\n")
 
+            #Manejamos la forma en la que acceder y mostrar las contraseñas guardas
             if opcion == 1:
                 clave = input("Introduce la clave a consultar: ")
 
@@ -200,12 +203,14 @@ while True:
                 except NameError as e:
                     error(e)
 
+            #Mostramos las claves de las contraseñas guardadas
             elif opcion == 2:
                 lista = u.getListaClaves()
                 print("Las claves guardadas son:")
                 for clave in lista:
                     print(" - ", clave)
 
+            #Consulta de la fecha límite de una contraseña
             elif opcion == 3:
                 clave = input("Introduce la clave de la contraseña a consultar: ")
                 f = datetime.datetime.strptime(
@@ -215,6 +220,7 @@ while True:
                     f"La contraseña {u.getContrasena(clave)} es valida hasta {f.strftime("%d-%m-%Y")}"
                 )
 
+            #Guardar una nueva contraseña
             elif opcion == 4:
                 clave = input(
                     "Introduce la clave (identificador de la contraseña que va a guardar): "
@@ -248,6 +254,7 @@ while True:
                 u.guardar(clave, usu, passw)
                 ok("Guardada con exito!")
 
+            #Editar una contraseña o usuario
             elif opcion == 5:
                 clave = input("Introducir la clave de la contraseña a editar: ")
                 usu = input(
@@ -263,6 +270,7 @@ while True:
                     u.editar(clave, usu, passw)
                     ok("Se ha editado con éxito")
 
+            #Eliminar una contraseña guardada
             elif opcion == 6:
                 clave = input(
                     "Introduce la clave de la contraseña que desea eliminar: "
@@ -271,6 +279,7 @@ while True:
 
                 ok("La contraseña ha sido borrada con exito")
 
+            #Cerrar sesión
             elif opcion == 0:
                 u.cierraSesion()
                 ok("Sesión cerrada\n")
@@ -278,17 +287,3 @@ while True:
             else:
                 error("Esa opción no es valida")
 
-
-"""
-u = Usuario()
-print("prueba")
-u.iniciaSesion("valde", "qwerty")
-# u.creaSesion("valde", "qwerty")
-# u.guardar("uja", "jmvs0008", "1234")
-# u.guardar("personal", "josemvalde", "asdf")
-
-# u.eliminar("uja")
-u.editar("personal", contrasena="zxc")
-print(u.getContrasena("personal"))
-u.cierraSesion()
-"""
