@@ -55,11 +55,11 @@ class SQL:
     def __desencriptar(self, pwd):
         data = base64.b64decode(pwd)
         salt, nonce, tag, ciphertext = data[:16], data[16:32], data[32:48], data[48:]
-        # Derive the key again
+        
         key = PBKDF2(self.key, salt, dkLen=32, count=100000)
-        # Recreate the AES cipher
+        
         cipher = AES.new(key, AES.MODE_GCM, nonce=nonce)
-        # Decrypt the password
+        
         return cipher.decrypt_and_verify(ciphertext, tag).decode()
 
     def __getFechaHoy(self):
