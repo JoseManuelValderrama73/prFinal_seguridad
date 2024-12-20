@@ -76,7 +76,7 @@ def generar():
         random.choice(symbols),
     ]
 
-   password += random.choices(all_characters, k=config.C_LON - 4)
+    password += random.choices(all_characters, k=config.C_LON - 4)
 
     random.shuffle(password)
 
