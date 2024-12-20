@@ -23,19 +23,19 @@ def secure_input(prompt):
     try:
         while True:
             char = get_char()
-            if char == "\n" or char == "\r":  # Enter key pressed
+            if char == "\n" or char == "\r":  
                 break
-            print(char, end="", flush=True)  # Print character immediately
+            print(char, end="", flush=True)  
             input_chars.append(char)
             time.sleep(1)
-            print("\b*", end="", flush=True)  # Replace character with '*'
+            print("\b*", end="", flush=True) 
     except KeyboardInterrupt:
         print("\nInput interrupted.")
-    print()  # Move to the next line
+    print()  
     return "".join(input_chars)
 
 
-# Example usage
+
 if __name__ == "__main__":
     password = secure_input("Enter your password: ")
     print(f"Your input was: {password}")
